@@ -1,30 +1,52 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <v-app>
+    <v-main>
+      <router-view />
+    </v-main>
+  </v-app>
 </template>
 
+<script lang="ts">
+import { defineComponent } from "vue";
+
+// import Navbar from "./components/Navbar.vue";
+
+export default defineComponent({
+  name: "App",
+  components: {
+    // Navbar,
+  },
+  data() {
+    return {
+      //
+    };
+  },
+});
+</script>
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+a {
+  text-decoration: none !important;
+}
+.container-base {
+  padding: 5rem 4rem;
+}
+.container-shirts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 2rem;
+  justify-items: center;
+  /* padding: 2rem 0; */
+}
+.v-navigation-drawer__scrim {
+  z-index: 1018 !important;
 }
 
-nav {
-  padding: 30px;
+.v-overlay.v-snackbar {
+  z-index: 3002 !important;
 }
-
-nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-nav a.router-link-exact-active {
-  color: #42b983;
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 </style>
