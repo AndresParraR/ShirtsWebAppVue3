@@ -59,16 +59,39 @@
         Start to Design
       </v-btn>
     </router-link>
-    <v-btn class="text-none" stacked>
-      <v-badge content="9" color="info" floating>
-        <v-icon size="small">fa-solid fa-cart-shopping</v-icon>
-      </v-badge>
+    <v-btn
+      v-if="!user"
+      @click="handleDialogStep(true)"
+      class="ml-5"
+      variant="outlined"
+      color="primary"
+      prepend-icon="fa-solid fa-right-to-bracket"
+    >
+      Login
     </v-btn>
-    <v-btn class="text-none" stacked>
+    <router-link to="/shops">
+      <v-btn v-if="user" class="text-none" color="black" stacked>
+        <v-icon size="small">fa-solid fa-shop</v-icon>
+      </v-btn>
+    </router-link>
+    <router-link to="/myCar">
+      <v-btn class="text-none" color="black" stacked>
+        <v-badge
+          v-if="storeId.length > 0"
+          :content="storeId.length"
+          color="info"
+          floating
+        >
+          <v-icon size="small">fa-solid fa-cart-shopping</v-icon>
+        </v-badge>
+        <v-icon v-else size="small">fa-solid fa-cart-shopping</v-icon>
+      </v-btn>
+    </router-link>
+    <!-- <v-btn class="text-none" stacked>
       <v-badge content="9" color="info" floating>
         <v-icon size="small">fa-solid fa-bell</v-icon>
       </v-badge>
-    </v-btn>
+    </v-btn> -->
 
     <v-menu open-on-hover location="bottom" v-if="user">
       <template v-slot:activator="{ props }">
@@ -85,7 +108,12 @@
 
       <v-list>
         <template v-for="(item, index) in items" :key="index">
-          <v-list-item :value="item.title" @click="drawerSettings = true">
+          <v-list-item
+            :value="item.title"
+            @click="
+              item.title == 'Logout' ? setLogout() : (drawerSettings = true)
+            "
+          >
             <v-list-item-avatar start>
               <v-icon size="small">{{ item.icon }}</v-icon>
             </v-list-item-avatar>
@@ -176,22 +204,39 @@
 </template>
 
 <script setup lang="ts">
-import { useState } from "@/utils/helpesVuex";
+import { useActions, useState } from "@/utils/helpesVuex";
 import { ref, onMounted, computed, watch, defineComponent } from "vue";
 
-const { user } = useState(["user"]);
+const { storeId, user } = useState(["storeId", "user"]);
+
+const { handleDialogStep, setLogout } = useActions([
+  "handleDialogStep",
+  "setLogout",
+]);
 
 onMounted(() => {
+  checkLinks();
+});
+
+watch(user, (value) => {
+  console.log(value);
+  checkLinks();
+});
+
+const checkLinks = () => {
+  console.log(user.value, links.value);
   if (!user.value) {
-    links.value = links.value.filter((el) => {
+    links.value = originalLinks.filter((el) => {
       switch (el.text) {
         case "Shirts":
         case "Editor":
           return el;
       }
     });
+  } else {
+    links.value = originalLinks;
   }
-});
+};
 
 const drawer = ref(false);
 const drawerSettings = ref(false);
@@ -206,6 +251,17 @@ const links = ref([
   { icon: "fa-solid fa-bag-shopping", text: "Sells", route: "/sells" },
   { icon: "fa-solid fa-tag", text: "Orders", route: "/orders" },
 ]);
+const originalLinks = [
+  { icon: "fa-solid fa-house", text: "Shirts", route: "/" },
+  {
+    icon: "fa-solid fa-shirt",
+    text: "My Designs",
+    route: "/myDesigns",
+  },
+  { icon: "fa-solid fa-pen-ruler", text: "Editor", route: "/editor" },
+  { icon: "fa-solid fa-bag-shopping", text: "Sells", route: "/sells" },
+  { icon: "fa-solid fa-tag", text: "Orders", route: "/orders" },
+];
 const items = ref([
   { title: "My account", icon: "mdi:mdi-account-circle" },
   { title: "Add another account", icon: "fa-solid fa-user-plus" },

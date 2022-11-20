@@ -3,7 +3,7 @@
     <DialogFullScreen
       @handleDialog="handleDialogStep($event)"
       :dialog="dialogSteps"
-      :pastSteps="steps"
+      :pastSteps="stepsToShow"
       :isBuy="isBuy"
     />
     <div class="mb-10">
@@ -12,7 +12,10 @@
           variant="outlined"
           color="primary"
           prepend-icon="fa-solid fa-cash-register"
-          @click="handleDialogStep(true); isBuy = false"
+          @click="
+            handleDialogStep(true);
+            isBuy = false;
+          "
         >
           Sell
         </v-btn>
@@ -20,7 +23,10 @@
           variant="outlined"
           color="primary"
           append-icon="fa-solid fa-bag-shopping"
-          @click="handleDialogStep(true); isBuy = true"
+          @click="
+            handleDialogStep(true);
+            isBuy = true;
+          "
         >
           Buy
         </v-btn>
@@ -104,10 +110,24 @@
               </v-window-item>
             </v-window>
           </v-card-text>
+
+          <p class="text-h5 text--primary ml-5 mt-16 mb-5">
+            Choose the T-Shirt colour
+          </p>
+
+          <v-color-picker
+            :hide-inputs="true"
+            :hide-canvas="true"
+            :hide-sliders="true"
+            :show-swatches="true"
+            :swatches="swatches"
+            v-model="picker"
+            elevation="0"
+          ></v-color-picker>
         </v-card>
       </div>
       <div>
-        <Moveable />
+        <Moveable :color="picker" :productType="ProductTypeEnum.SHIRT" />
       </div>
     </div>
   </div>
@@ -120,6 +140,8 @@ import { defineComponent, ref, watch, onMounted, onBeforeMount } from "vue";
 import Moveable from "../components/Moveable.vue";
 import DialogFullScreen from "../components/DialogFullScreen.vue";
 import { useState, useActions } from "@/utils/helpesVuex";
+import { ProductTypeEnum } from "@/types";
+import { validate } from "uuid";
 
 interface stepProp {
   component: string;
@@ -144,9 +166,17 @@ export default defineComponent({
     const toggle = ref(null);
     const tab = ref(null);
     const dialogSteps = ref(false);
+    const picker = ref("#FFFF00");
+    const swatches = ref([
+      ["#FF0000", "#AA0000", "#550000"],
+      ["#FFFF00", "#AAAA00", "#555500"],
+      ["#00FF00", "#00AA00", "#005500"],
+      ["#00FFFF", "#00AAAA", "#005555"],
+      ["#0000FF", "#0000AA", "#000055"],
+    ]);
     const steps = ref<stepProp[]>([
       {
-        component: "Register",
+        component: "Login",
         tutorial: false,
       },
       {
@@ -162,6 +192,7 @@ export default defineComponent({
         tutorial: false,
       },
     ]);
+    const stepsToShow = ref<stepProp[]>([]);
     const newSteps = ref<stepProp[]>([]);
 
     const textRules = ref([(v: any) => !!v || "Text is required"]);
@@ -172,13 +203,10 @@ export default defineComponent({
     const urlImg = ref<string | null>(null);
 
     watch(user, (value) => {
-      console.log("user", value);
-      if (value) {
-        newSteps.value = steps.value.filter(
-          (el) => el.component != "Register" && el.component != "Login"
-        );
-      }
-      if (!dialogSteps.value) steps.value = newSteps.value;
+      console.log("user", value, steps);
+      validateDialogSteps();
+      // handleDialogStep(false);
+      // handleDialogStep(true);
     });
 
     watch(objImage, (value) => {
@@ -187,20 +215,45 @@ export default defineComponent({
 
     onBeforeMount(() => {
       console.log("onBeforeMount", user);
-      if (user.value) {
-        newSteps.value = steps.value.filter(
-          (el) => el.component != "Register" && el.component != "Login"
-        );
-        steps.value = newSteps.value;
-        console.log(steps.value);
-      }
+      validateDialogSteps();
     });
 
-    const handleDialogStep = (val: boolean) => {
-      console.log("handleDialogStep", val);
-      if (!val && newSteps.value.length > 0) {
-        steps.value = newSteps.value;
+    const validateDialogSteps = () => {
+      if (user.value) {
+        newSteps.value = steps.value.filter((el) => {
+          switch (el.component) {
+            case "firstStepBrand":
+            case "secondStepBrand":
+            case "SellOrBuyPrice":
+              return el;
+          }
+        });
+        if (user.value.brandId) {
+          newSteps.value = newSteps.value.filter((el) => {
+            switch (el.component) {
+              case "SellOrBuyPrice":
+                return el;
+            }
+          });
+        }
+      } else {
+        newSteps.value = steps.value;
       }
+      stepsToShow.value = newSteps.value;
+    };
+
+    const handleDialogStep = (val: boolean) => {
+      validateDialogSteps();
+      console.log(
+        "handleDialogStep",
+        val,
+        steps.value,
+        newSteps.value,
+        val && newSteps.value.length > 0
+      );
+      // if (newSteps.value.length > 0) {
+      //   steps.value = newSteps.value;
+      // }
       dialogSteps.value = val;
     };
 
@@ -214,6 +267,7 @@ export default defineComponent({
               txt: val,
               src: null,
               isImage: false,
+              key: ProductTypeEnum.SHIRT,
             };
             break;
 
@@ -222,6 +276,7 @@ export default defineComponent({
               txt: null,
               src: val,
               isImage: true,
+              key: ProductTypeEnum.SHIRT,
             };
             break;
         }
@@ -260,6 +315,7 @@ export default defineComponent({
     };
 
     return {
+      stepsToShow,
       page,
       steps,
       dialogSteps,
@@ -277,6 +333,9 @@ export default defineComponent({
       objImage,
       urlImg,
       isBuy,
+      picker,
+      swatches,
+      ProductTypeEnum,
     };
   },
 });

@@ -1,9 +1,9 @@
 <template>
   <div class="container-base">
-    <div v-if="myShirts.length < 1">
+    <div v-if="myShirts.length < 1 && !genericLoading">
       <h1>Start to Design!</h1>
     </div>
-    <div v-else>
+    <div v-else-if="!genericLoading">
       <div style="display: grid; justify-content: flex-end">
         <v-text-field
           style="width: 250px"
@@ -12,19 +12,19 @@
           variant="outlined"
         ></v-text-field>
       </div>
-      {{ myShirts }}
       <div class="container-shirts">
         <Shirt
           :edit="true"
           v-for="(shirt, i) in myShirts"
-          :shirtData="shirt"
+          :shirtData="shirt.product"
           :key="i"
         />
       </div>
       <div class="text-center">
         <v-pagination
+          v-if="myShirts.length / 8 > 1"
           v-model="page"
-          :length="15"
+          :length="myShirts.length / 8"
           :total-visible="7"
         ></v-pagination>
       </div>
@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import { useActions, useState } from "@/utils/helpesVuex";
-import { defineComponent, ref } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
 
 // Components
 import Shirt from "../components/Shirt.vue";
@@ -44,15 +44,26 @@ export default defineComponent({
   components: {
     Shirt,
   },
-  mounted() {
-    const { fetchMyShirtsList } = useActions(["fetchMyShirtsList"]);
-    fetchMyShirtsList();
-  },
   setup() {
-    const page = ref(1);
-    const { myShirts } = useState(["myShirts"]);
+    const { fetchMyShirtsList, handleGenericLoading } = useActions([
+      "fetchMyShirtsList",
+      "handleGenericLoading",
+    ]);
 
-    return { page, myShirts };
+    const { myShirts, genericLoading } = useState([
+      "myShirts",
+      "genericLoading",
+    ]);
+
+    onMounted(async () => {
+      handleGenericLoading(true);
+      await fetchMyShirtsList();
+      handleGenericLoading(false);
+    });
+
+    const page = ref(1);
+
+    return { page, myShirts, genericLoading };
   },
 });
 </script>

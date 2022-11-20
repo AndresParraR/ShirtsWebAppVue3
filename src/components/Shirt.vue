@@ -8,7 +8,7 @@
       v-if="edit"
       icon
       color="primary"
-      style="position: absolute; top: -20px; right: -20px; z-index: 1"
+      style="position: absolute; bottom: -20px; right: -20px; z-index: 1"
     >
       <v-icon>fa-solid fa-clone</v-icon>
     </v-btn>

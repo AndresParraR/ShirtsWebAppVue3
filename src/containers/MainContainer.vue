@@ -29,7 +29,16 @@
       type="error"
       >I'm an error alert.</v-alert> -->
 
-    <v-overlay :model-value="loading" class="align-center justify-center">
+    <DialogFullScreen
+      @handleDialog="handleDialogStep($event)"
+      :dialog="dialogSteps"
+      :pastSteps="steps"
+    />
+
+    <v-overlay
+      :model-value="genericLoading"
+      class="align-center justify-center"
+    >
       <v-progress-circular
         :size="50"
         color="primary"
@@ -40,7 +49,7 @@
     <v-snackbar
       v-model="toast.show"
       min-height="50"
-      :timeout="5000"
+      :timeout="4000"
       position="fixed"
       location="top right"
       :multi-line="false"
@@ -92,28 +101,68 @@
   </div>
 </template>
 
-<script>
-import Navbar from "../components/Navbar";
+<script lang="ts">
+import Navbar from "../components/Navbar.vue";
 import { useActions, useState } from "@/utils/helpesVuex";
+import { ref } from "vue";
+import { StepProp } from "@/types";
+import DialogFullScreen from "../components/DialogFullScreen.vue";
+import { storageDesign } from "@/firebase";
+import { listAll } from "firebase/storage";
 
 export default {
   components: {
     Navbar,
+    DialogFullScreen,
     // Footer,
+  },
+  mounted() {
+    console.log(storageDesign);
+    listAll(storageDesign)
+      .then((res) => {
+        console.log("storageRef", res);
+        // res.prefixes.forEach((folderRef) => {
+        //   // All the prefixes under listRef.
+        //   // You may call listAll() recursively on them.
+        // });
+        // res.items.forEach((itemRef) => {
+        //   // All the items under listRef.
+        // });
+      })
+      .catch((error) => {
+        console.log("storageRefError", error);
+        // Uh-oh, an error occurred!
+      });
   },
   data() {
     return {
       collapseNavbar: false,
-      loading: false,
       fab: false,
       urlQualitas: process.env.VUE_APP_API_URL_QUALITAS,
     };
   },
   setup() {
-    const { toast } = useState(["toast"]);
+    const { toast, genericLoading, dialogSteps } = useState([
+      "toast",
+      "genericLoading",
+      "dialogSteps",
+    ]);
+    const { handleDialogStep } = useActions(["handleDialogStep"]);
+
+    const steps = ref<StepProp[]>([
+      {
+        component: "Login",
+        tutorial: false,
+      },
+    ]);
+
+    // const handleDialogStep = (val: boolean) => {
+    //   console.log("handleDialogStep", val);
+    //   dialogSteps.value = val;
+    // };
 
     // eslint-disable-next-line vue/no-dupe-keys
-    return { toast };
+    return { steps, dialogSteps, toast, genericLoading, handleDialogStep };
   },
   computed: {},
   methods: {

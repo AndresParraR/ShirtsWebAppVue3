@@ -22,6 +22,7 @@
         :rules="passwordRules"
         label="Password"
         required
+        type="password"
       ></v-text-field>
 
       <v-text-field
@@ -30,6 +31,7 @@
         :rules="passwordRules"
         label="Confirm Password"
         required
+        type="password"
       ></v-text-field>
 
       <div class="d-flex">
@@ -86,7 +88,6 @@ export default {
   setup(props) {
     const { register } = useActions(["register"]);
     const { user } = useState(["user"]);
-
 
     watch(user, (value) => {
       console.log(value, props);

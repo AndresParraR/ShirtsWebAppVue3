@@ -1,6 +1,6 @@
 <template>
   <div class="container-base">
-    <div v-if="allShirts.length >= 1">
+    <div v-if="allShirts.length >= 1 && !genericLoading">
       <div style="display: grid; justify-content: flex-end">
         <v-text-field
           style="width: 250px"
@@ -27,7 +27,7 @@
         ></v-pagination>
       </div>
     </div>
-    <div style="" v-else>
+    <div style="" v-else-if="!genericLoading">
       <h1>There is not T-Shirts!</h1>
     </div>
   </div>
@@ -35,25 +35,35 @@
 
 <script lang="ts">
 import { useActions, useState } from "@/utils/helpesVuex";
-import { defineComponent, ref } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
 
 // Components
 import Shirt from "../components/Shirt.vue";
 
 export default defineComponent({
   name: "ShirtsView",
-  mounted() {
-    const { fetchAllShirtsList } = useActions(["fetchAllShirtsList"]);
-    fetchAllShirtsList();
-  },
   components: {
     Shirt,
   },
   setup() {
+    const { fetchAllShirtsList, handleGenericLoading } = useActions([
+      "fetchAllShirtsList",
+      "handleGenericLoading",
+    ]);
+    const { allShirts, user, genericLoading } = useState([
+      "allShirts",
+      "user",
+      "genericLoading",
+    ]);
     const page = ref(1);
-    const { allShirts, user } = useState(["allShirts", "user"]);
 
-    return { page, allShirts, user };
+    onMounted(async () => {
+      handleGenericLoading(true);
+      await fetchAllShirtsList();
+      handleGenericLoading(false);
+    });
+
+    return { page, allShirts, user, fetchAllShirtsList, genericLoading };
   },
 });
 </script>

@@ -13,7 +13,11 @@
           cover
         ></v-img>
       </div>
-      <ProductDetail :shirtData="detailShirt" class="detail-product" />
+      <ProductDetail
+        v-if="detailShirt"
+        :shirtData="detailShirt"
+        class="detail-product"
+      />
     </div>
   </div>
 </template>

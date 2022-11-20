@@ -115,7 +115,8 @@ export default {
     },
     isBuy: {
       type: Boolean,
-      required: true,
+      required: false,
+      default: false,
     },
   },
   mounted() {
@@ -151,33 +152,42 @@ export default {
   },
   watch: {
     dialog() {
-      if (!this.dialog) {
-        this.steps = this.pastSteps.map((el) => {
-          return { ...el, completed: false };
-        });
-        this.carousel = 0;
-      } else {
-        this.priceStepIsBuy = this.isBuy;
-      }
+      console.log("this.dialog", this.pastSteps);
+      this.validateSteps();
+    },
+    pastSteps() {
+      this.validateSteps();
     },
   },
   computed: {},
   methods: {
+    validateSteps() {
+      this.steps = this.pastSteps.map((el) => {
+        return { ...el, completed: false };
+      });
+      this.carousel = 0;
+      this.priceStepIsBuy = this.isBuy;
+    },
     updateCarousel(value) {
-      console.log(value, this.carousel, this.steps.length - 1);
-      console.log(this.steps[value].tutorial);
-      // if (Math.abs(value - this.carousel) > 1) {
-      //   return;
-      // } else if (value < this.carousel && this.steps[this.carousel].completed) {
-      //   return;
-      // }
+      console.log(this.carousel, value, this.steps.length);
+      if (value >= this.steps.length) this.close();
 
-      // if (this.steps[this.carousel].completed && value > this.carousel) {
-      //   this.carousel = value;
-      // } else if ((this.steps[this.carousel].tutorial && value > this.carousel) || (this.steps[value].tutorial && value == this.carousel - 1)) {
-      //   this.carousel = value;
-      // }
-      this.carousel = value;
+      if (Math.abs(value - this.carousel) > 1) {
+        return;
+      } else if (value < this.carousel && this.steps[this.carousel].completed) {
+        return;
+      }
+
+      if (this.steps[this.carousel].completed && value > this.carousel) {
+        this.carousel = value;
+      } else if (
+        (this.steps[this.carousel].tutorial && value > this.carousel) ||
+        (this.steps[value].tutorial && value == this.carousel - 1)
+      ) {
+        this.carousel = value;
+      }
+
+      // this.carousel = value;
     },
     close() {
       console.log("handleDialog");
@@ -207,6 +217,10 @@ export default {
         case "Login":
           return {
             linkRegister: this.setIsLoginUp,
+            finishedFunc: this.currentStepCompleted,
+          };
+        case "secondStepBrand":
+          return {
             finishedFunc: this.currentStepCompleted,
           };
         case "SellOrBuyPrice":

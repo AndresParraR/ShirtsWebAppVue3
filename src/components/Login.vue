@@ -14,6 +14,7 @@
         :counter="10"
         :rules="passwordRules"
         label="Password"
+        type="password"
         required
       ></v-text-field>
 
@@ -37,6 +38,10 @@ import { watch } from "vue";
 export default {
   props: {
     linkRegister: {
+      type: Function,
+      required: false,
+    },
+    finishedFunc: {
       type: Function,
       required: false,
     },
