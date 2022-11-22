@@ -10,6 +10,7 @@ export default createStore({
     moveableElements: {} as any,
     storeId: [] as any,
     shops: [] as any,
+    colours: [] as any,
     storeItems: [] as any,
     genericLoading: false,
     dialogSteps: false,
@@ -43,6 +44,9 @@ export default createStore({
         payload.isNew = diffDays > 7 ? true : false;
         state.storeItems.push(payload);
       }
+    },
+    setCreatedProduct(state, payload) {
+      state.myShirts = payload;
     },
     setShirtDetail(state, payload) {
       const currentDate = new Date();
@@ -141,6 +145,9 @@ export default createStore({
     setCurrentTargetElement(state, payload) {
       state.currentTargetElement = payload;
     },
+    setAllColours(state, payload) {
+      state.colours = payload;
+    },
     addMoveableElement(state, payload) {
       if (!state.moveableElements[payload.key])
         state.moveableElements[payload.key] = [];
@@ -158,6 +165,7 @@ export default createStore({
         html: payload.isImage
           ? `<img class="moveable-img" src="${payload.src}" cover />`
           : `<p>${payload.txt}</p>`,
+        isImage: payload.isImage,
       };
       // state.moveableElements[payload.key] = [
       //   newMoveableElement,
@@ -194,6 +202,26 @@ export default createStore({
     },
   },
   actions: {
+    async fetchAllColours({ commit }) {
+      try {
+        const response = await graphqlClient.query({
+          query: gql`
+            query Colours {
+              colours {
+                _id
+                name
+              }
+            }
+          `,
+          errorPolicy: "all",
+        });
+        if (response.errors) commit("setShowToastError", response.errors);
+        else commit("setAllColours", response.data.colours);
+      } catch (error) {
+        const graphQlErrors = (error as any).networkError.result.errors;
+        commit("setShowToastError", graphQlErrors);
+      }
+    },
     async fetchShirtStore({ commit }, id) {
       try {
         const response = await graphqlClient.query({
@@ -399,6 +427,49 @@ export default createStore({
         else {
           commit("setMyShopping", response.data.createSell);
           commit("setShowSuccessInfo", "Thanks for the purchasing!");
+        }
+        // else {
+        //   commit("setRegisterOrLogin", response.data.login);
+        // }
+      } catch (error) {
+        const graphQlErrors = (error as any).networkError.result.errors;
+        commit("setShowToastError", graphQlErrors);
+      }
+    },
+    async createProduct({ commit }, { design, userPrice, colourId, config }) {
+      try {
+        const response = await graphqlClient.mutate({
+          mutation: gql`
+            mutation ($createProductInput: CreateProductInput!) {
+              createProduct(createProductInput: $createProductInput) {
+                _id
+                userId
+                colourId
+                printTypeId
+                design
+                userPrice
+                creationDate
+              }
+            }
+          `,
+          variables: {
+            createProductInput: {
+              design,
+              printTypeId: "6332288451afb258b78effc6",
+              colourId,
+              title: "test",
+              description:
+                "Lorem ipsum dolor sit amet consectetur adipisicing elit. In doloribus recusandae atque earum quos possimus eveniet cum vero sequi assumenda.",
+              config,
+              userPrice,
+            },
+          },
+          errorPolicy: "all",
+        });
+        if (response.errors) commit("setShowToastError", response.errors);
+        else {
+          commit("setCreatedProduct", response.data.createProduct);
+          commit("setShowSuccessInfo", "Thanks for create a Product!");
         }
         // else {
         //   commit("setRegisterOrLogin", response.data.login);

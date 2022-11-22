@@ -20,8 +20,8 @@
       <div style="display: grid; align-items: center">
         <v-form ref="form" v-model="valid" lazy-validation>
           <div v-if="!isBuy">
-            <h3>Base Price: $12312</h3>
-            <h3 class="mb-7 mt-5">Shipping: $5234</h3>
+            <h3 class="mb-7">Base Price: ${{ basePrice }}</h3>
+            <!-- <h3 class="mb-7 mt-5">Shipping: $5234</h3> -->
             <v-text-field
               label="Amount"
               v-model="userPrice"
@@ -58,7 +58,9 @@
             ></v-text-field>
           </div>
 
-          <h2 class="mb-10 mt-7">Total: $5234</h2>
+          <h2 class="mb-10 mt-7">
+            Total: ${{ parseInt(userPrice) + parseInt(basePrice) }}
+          </h2>
 
           <v-btn
             :disabled="!valid"
@@ -81,10 +83,15 @@ export default {
       type: Boolean,
       required: true,
     },
+    setUserPrice: {
+      type: Function,
+      required: false,
+    },
   },
   data: () => ({
     valid: true,
     selection: "M",
+    basePrice: 22000,
     userPrice: 0,
     sizes: ["XS", "S", "M", "L", "XL"],
     priceRules: [
@@ -104,6 +111,7 @@ export default {
     },
     validate() {
       this.$refs.form.validate();
+      this.setUserPrice(this.userPrice);
     },
   },
 };

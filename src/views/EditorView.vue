@@ -2,6 +2,7 @@
   <div class="container-base">
     <DialogFullScreen
       @handleDialog="handleDialogStep($event)"
+      @setUserPrice="submit($event)"
       :dialog="dialogSteps"
       :pastSteps="stepsToShow"
       :isBuy="isBuy"
@@ -19,7 +20,7 @@
         >
           Sell
         </v-btn>
-        <v-btn
+        <!-- <v-btn
           variant="outlined"
           color="primary"
           append-icon="fa-solid fa-bag-shopping"
@@ -29,7 +30,7 @@
           "
         >
           Buy
-        </v-btn>
+        </v-btn> -->
       </v-btn-toggle>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr">
@@ -114,13 +115,12 @@
           <p class="text-h5 text--primary ml-5 mt-16 mb-5">
             Choose the T-Shirt colour
           </p>
-
           <v-color-picker
             :hide-inputs="true"
             :hide-canvas="true"
             :hide-sliders="true"
             :show-swatches="true"
-            :swatches="swatches"
+            :swatches="coloursToPicker"
             v-model="picker"
             elevation="0"
           ></v-color-picker>
@@ -134,7 +134,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted, onBeforeMount } from "vue";
+import {
+  defineComponent,
+  ref,
+  watch,
+  onMounted,
+  onBeforeMount,
+  computed,
+} from "vue";
 
 // Components
 import Moveable from "../components/Moveable.vue";
@@ -142,6 +149,8 @@ import DialogFullScreen from "../components/DialogFullScreen.vue";
 import { useState, useActions } from "@/utils/helpesVuex";
 import { ProductTypeEnum } from "@/types";
 import { validate } from "uuid";
+import html2canvas from "html2canvas";
+import { uploadFile } from "@/firebase";
 
 interface stepProp {
   component: string;
@@ -155,8 +164,16 @@ export default defineComponent({
     DialogFullScreen,
   },
   setup() {
-    const { user } = useState(["user"]);
-    const { addMoveableElement } = useActions(["addMoveableElement"]);
+    const { user, colours, moveableElements } = useState([
+      "user",
+      "colours",
+      "moveableElements",
+    ]);
+    const { addMoveableElement, fetchAllColours, createProduct } = useActions([
+      "addMoveableElement",
+      "fetchAllColours",
+      "createProduct",
+    ]);
 
     const form = ref(null);
     const isBuy = ref(false);
@@ -166,7 +183,7 @@ export default defineComponent({
     const toggle = ref(null);
     const tab = ref(null);
     const dialogSteps = ref(false);
-    const picker = ref("#FFFF00");
+    const picker = ref("");
     const swatches = ref([
       ["#FF0000", "#AA0000", "#550000"],
       ["#FFFF00", "#AAAA00", "#555500"],
@@ -202,6 +219,28 @@ export default defineComponent({
     const objImage = ref([]);
     const urlImg = ref<string | null>(null);
 
+    const coloursToPicker = computed(() => {
+      let column = 0;
+      let row = 0;
+      return colours.value.reduce(
+        (acc: any, el: any) => {
+          acc[row][column] = el.name.toLowerCase();
+          column += 1;
+          if (column >= 3) {
+            row += 1;
+            column = 0;
+            return [...acc, []];
+          }
+          return [...acc];
+        },
+        [[]]
+      );
+    });
+
+    watch(coloursToPicker, (value) => {
+      picker.value = value[0][0];
+    });
+
     watch(user, (value) => {
       console.log("user", value, steps);
       validateDialogSteps();
@@ -215,6 +254,7 @@ export default defineComponent({
 
     onBeforeMount(() => {
       console.log("onBeforeMount", user);
+      fetchAllColours();
       validateDialogSteps();
     });
 
@@ -314,7 +354,53 @@ export default defineComponent({
       objImage.value = [];
     };
 
+    // const uploadImageShirt = async () => {
+
+    // };
+
+    const submit = async (price: any) => {
+      console.log("submit", price);
+      debugger;
+      const colourId = colours.value.find((el: any) => {
+        if (el.name.toLowerCase() == picker.value.toLowerCase()) {
+          return el._id;
+        }
+      });
+      const container = document.getElementById("moveable-container");
+      const canvas = await html2canvas(container as HTMLElement);
+      let imageBlob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/png")
+      );
+      const design = await uploadFile(imageBlob as Blob);
+      let config = [];
+      // const design = await uploadImageShirt();
+      if (
+        moveableElements.value[ProductTypeEnum.SHIRT] &&
+        moveableElements.value[ProductTypeEnum.SHIRT].length > 0
+      ) {
+        config = moveableElements.value[ProductTypeEnum.SHIRT].map(
+          (el: any) => {
+            return {
+              cssProps: el.style,
+              type: el.isImage ? "image" : "text",
+              name: el.isImage ? "image" : "text",
+            };
+          }
+        );
+      }
+      await createProduct({
+        design,
+        userPrice: parseInt(price),
+        colourId: colourId._id,
+        config,
+      });
+      handleDialogStep(false);
+      console.log("Finished");
+    };
+
     return {
+      submit,
+      coloursToPicker,
       stepsToShow,
       page,
       steps,

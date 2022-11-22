@@ -14,12 +14,16 @@ const authLink = setContext((_, { headers }) => {
     headers: {
       ...headers,
       authorization: token ? `Bearer ${token}` : null,
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      // mode: "cors",
     },
   };
 });
 
 export default new ApolloClient({
-  link: authLink.concat(new HttpLink({ uri: "http://localhost:3000/graphql" })),
+  link: authLink.concat(
+    new HttpLink({ uri: "https://shirts-api.herokuapp.com/graphql" })
+  ),
   cache: new InMemoryCache(),
 });
-

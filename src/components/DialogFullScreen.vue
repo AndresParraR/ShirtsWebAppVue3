@@ -207,6 +207,10 @@ export default {
       console.log(this.steps);
       this.updateCarousel(this.carousel + 1);
     },
+    emitUserPrice(price) {
+      console.log("emitUserPrice", price);
+      this.$emit("setUserPrice", price);
+    },
     currentProps(currentComponent, indexComponent) {
       switch (currentComponent) {
         case "Register":
@@ -224,7 +228,10 @@ export default {
             finishedFunc: this.currentStepCompleted,
           };
         case "SellOrBuyPrice":
-          return { isBuy: this.priceStepIsBuy };
+          return {
+            setUserPrice: this.emitUserPrice,
+            isBuy: this.priceStepIsBuy,
+          };
 
         default:
           return {};
