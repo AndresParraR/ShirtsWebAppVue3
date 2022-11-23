@@ -73,10 +73,14 @@
       </v-btn-toggle>
     </v-menu>
 
+    <v-card-title class="ma-2">
+      {{ shirtData.title }}
+    </v-card-title>
+
     <v-img
       class="align-end text-white"
       height="200"
-      src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
+      :src="shirtData.design"
       cover
     >
       <v-card-title>{{ shirtData.title }}</v-card-title>
