@@ -78,14 +78,13 @@ export default createStore({
     setMyShirtsList(state, payload) {
       const currentDate = new Date();
       currentDate.setDate(currentDate.getDate() + 7);
-
       payload.forEach((el: any) => {
         const diffDays =
           Math.round(
-            currentDate.getTime() - new Date(el.product.creationDate).getTime()
+            currentDate.getTime() - new Date(el.creationDate).getTime()
           ) /
           (1000 * 3600 * 24);
-        el.product.isNew = diffDays > 7 ? true : false;
+        el.isNew = diffDays < 7 ? true : false;
       });
       state.myShirts = payload;
     },
@@ -311,22 +310,15 @@ export default createStore({
           query: gql`
             query UserProducts {
               userProducts {
-                product {
-                  _id
-                  userId
-                  printTypeId
-                  design
-                  title
-                  description
-                  userPrice
-                  finalPrice
-                  creationDate
-                }
-                config {
-                  name
-                  type
-                  cssProps
-                }
+                _id
+                userId
+                printTypeId
+                design
+                title
+                description
+                userPrice
+                finalPrice
+                creationDate
               }
             }
           `,

@@ -1,11 +1,13 @@
 {
   "name": "shirts-web",
   "version": "0.1.0",
+
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "github": "gh-pages -d dist"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
@@ -22,6 +24,7 @@
     "apollo-link-http": "^1.5.17",
     "core-js": "^3.8.3",
     "firebase": "^9.14.0",
+    "gh-pages": "^4.0.0",
     "graphql": "^15.8.0",
     "graphql-tag": "^2.12.6",
     "html2canvas": "^1.4.1",

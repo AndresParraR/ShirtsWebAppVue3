@@ -169,10 +169,16 @@ export default defineComponent({
       "colours",
       "moveableElements",
     ]);
-    const { addMoveableElement, fetchAllColours, createProduct } = useActions([
+    const {
+      addMoveableElement,
+      fetchAllColours,
+      createProduct,
+      handleGenericLoading,
+    } = useActions([
       "addMoveableElement",
       "fetchAllColours",
       "createProduct",
+      "handleGenericLoading",
     ]);
 
     const form = ref(null);
@@ -252,9 +258,14 @@ export default defineComponent({
       console.log("objImage", value);
     });
 
-    onBeforeMount(() => {
+    onBeforeMount(async () => {
       console.log("onBeforeMount", user);
-      fetchAllColours();
+      if (coloursToPicker.value.length > 0) {
+        picker.value = coloursToPicker.value[0][0];
+      }
+      handleGenericLoading(true);
+      await fetchAllColours();
+      handleGenericLoading(false);
       validateDialogSteps();
     });
 

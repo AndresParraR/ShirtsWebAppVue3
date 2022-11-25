@@ -33,7 +33,7 @@ a {
 .container-shirts {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-  gap: 2rem;
+  gap: 7rem;
   justify-items: center;
   /* padding: 2rem 0; */
 }
@@ -48,5 +48,8 @@ input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+.v-color-picker-swatches__color {
+  border: 1px solid #000;
 }
 </style>

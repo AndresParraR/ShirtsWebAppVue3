@@ -16,7 +16,7 @@
         <Shirt
           :edit="true"
           v-for="(shirt, i) in myShirts"
-          :shirtData="shirt.product"
+          :shirtData="shirt"
           :key="i"
         />
       </div>

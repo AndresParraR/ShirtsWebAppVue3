@@ -20,7 +20,8 @@ const authLink = setContext((_, { headers }) => {
 
 export default new ApolloClient({
   link: authLink.concat(
-    new HttpLink({ uri: "https://shirts-api.herokuapp.com/graphql" })
+    // new HttpLink({ uri: "https://shirts-api.herokuapp.com/graphql" })
+    new HttpLink({ uri: "http://localhost:3000/graphql" })
   ),
   cache: new InMemoryCache(),
 });
