@@ -1,17 +1,40 @@
 <template>
   <div class="container-base">
     <!-- <h1 class="mb-16">{{ id }}</h1> -->
-    <!-- {{ detailShirt }} -->
+    <!-- {{ detailShirt.design }} -->
     <div class="product-container">
-      <div class="design-container">
+      <!-- <v-card class="mx-auto" max-width="344" v-if="detailShirt">
+        <v-img :src="detailShirt.design" height="200px" cover></v-img>
+      </v-card> -->
+      <!-- <div v-if="detailShirt">
+        <img :src="detailShirt.design" />
+      </div> -->
+      <!-- <v-card
+        max-width="400"
+        class="mx-auto design-container"
+        cols="12"
+        v-if="detailShirt"
+      >
         <v-img
-          style="height: 100%"
-          class="bg-white"
-          width="300"
-          :aspect-ratio="1"
-          src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
+          :src="detailShirt.design"
+          class="align-end text-white"
+          width="100%"
           cover
-        ></v-img>
+        >
+        </v-img>
+      </v-card> -->
+      <div class="design-container" v-if="detailShirt">
+        <div
+          class="product-img"
+          :style="`background-image: url(${detailShirt.design})`"
+        ></div>
+        <!-- <v-img
+          class="align-end"
+          height="100%"
+          :src="detailShirt.design"
+          width="300"
+          cover
+        ></v-img> -->
       </div>
       <ProductDetail
         v-if="detailShirt"
@@ -24,7 +47,7 @@
 
 <script lang="ts">
 import { useActions, useState } from "@/utils/helpesVuex";
-import { defineComponent, ref } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
 
 export interface Shirt {
   _id: string;
@@ -49,15 +72,20 @@ export default defineComponent({
   components: {
     ProductDetail,
   },
-  setup() {
-    const { fetchShirt } = useActions(["fetchShirt"]);
+  setup(props) {
+    const { fetchShirt, handleGenericLoading } = useActions([
+      "fetchShirt",
+      "handleGenericLoading",
+    ]);
     const { detailShirt } = useState(["detailShirt"]);
 
-    return { fetchShirt, detailShirt };
-  },
-  mounted() {
-    console.log(this.id);
-    this.fetchShirt(this.id);
+    onMounted(async () => {
+      handleGenericLoading(true);
+      await fetchShirt(props.id);
+      handleGenericLoading(false);
+    });
+
+    return { fetchShirt, detailShirt, handleGenericLoading };
   },
 });
 </script>
@@ -75,5 +103,10 @@ export default defineComponent({
 }
 .detail-product {
   width: 100%;
+}
+.product-img {
+  height: 100%;
+  min-width: 500px;
+  background-size: 100% 100%;
 }
 </style>
