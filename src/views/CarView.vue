@@ -58,7 +58,8 @@ export default defineComponent({
       if (storeId.value.length > 0) {
         handleGenericLoading(true);
         const shirtsStorePromises = storeId.value.map(async (el: any) => {
-          const fetch = await sleep(5000).then(() => fetchShirtStore(el.id));
+          // const fetch = await sleep(5000).then(() => fetchShirtStore(el.id));
+          const fetch = await fetchShirtStore(el.id);
           return fetch;
         });
         const result = await Promise.all(shirtsStorePromises);
