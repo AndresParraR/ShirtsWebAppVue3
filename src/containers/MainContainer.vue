@@ -37,7 +37,7 @@
 
     <v-overlay
       :model-value="genericLoading"
-      class="align-center justify-center"
+      class="align-center justify-center loader"
     >
       <v-progress-circular
         :size="50"

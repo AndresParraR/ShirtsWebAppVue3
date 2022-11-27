@@ -52,4 +52,7 @@ input::-webkit-inner-spin-button {
 .v-color-picker-swatches__color {
   border: 1px solid #000;
 }
+.loader {
+  z-index: 9999 !important;
+}
 </style>

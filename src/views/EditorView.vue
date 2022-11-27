@@ -400,6 +400,7 @@ export default defineComponent({
           }
         );
       }
+      handleGenericLoading(true);
       const createdProduct = await createProduct({
         design,
         userPrice: price ? parseInt(price) : 0,
@@ -414,6 +415,7 @@ export default defineComponent({
           quantity,
         });
       }
+      handleGenericLoading(false);
       handleDialogStep(false);
       console.log("Finished");
     };
