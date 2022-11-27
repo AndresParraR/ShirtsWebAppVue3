@@ -2,7 +2,7 @@
   <div class="container-base">
     <DialogFullScreen
       @handleDialog="handleDialogStep($event)"
-      @setUserPrice="submit($event)"
+      @setData="submit($event)"
       :dialog="dialogSteps"
       :pastSteps="stepsToShow"
       :isBuy="isBuy"
@@ -20,7 +20,7 @@
         >
           Sell
         </v-btn>
-        <!-- <v-btn
+        <v-btn
           variant="outlined"
           color="primary"
           append-icon="fa-solid fa-bag-shopping"
@@ -30,7 +30,7 @@
           "
         >
           Buy
-        </v-btn> -->
+        </v-btn>
       </v-btn-toggle>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr">
@@ -174,11 +174,13 @@ export default defineComponent({
       fetchAllColours,
       createProduct,
       handleGenericLoading,
+      buyProduct,
     } = useActions([
       "addMoveableElement",
       "fetchAllColours",
       "createProduct",
       "handleGenericLoading",
+      "buyProduct",
     ]);
 
     const form = ref(null);
@@ -365,26 +367,25 @@ export default defineComponent({
       objImage.value = [];
     };
 
-    // const uploadImageShirt = async () => {
-
-    // };
-
-    const submit = async (price: any) => {
-      console.log("submit", price);
-      debugger;
-      const colourId = colours.value.find((el: any) => {
-        if (el.name.toLowerCase() == picker.value.toLowerCase()) {
-          return el._id;
-        }
-      });
+    const uploadImageShirt = async () => {
       const container = document.getElementById("moveable-container");
       const canvas = await html2canvas(container as HTMLElement);
       let imageBlob = await new Promise((resolve) =>
         canvas.toBlob(resolve, "image/png")
       );
       const design = await uploadFile(imageBlob as Blob);
+      return design;
+    };
+
+    const submit = async ({ price, sizeId, quantity }: any) => {
+      console.log("submit", price);
+      const colourId = colours.value.find((el: any) => {
+        if (el.name.toLowerCase() == picker.value.toLowerCase()) {
+          return el._id;
+        }
+      });
+      const design = await uploadImageShirt();
       let config = [];
-      // const design = await uploadImageShirt();
       if (
         moveableElements.value[ProductTypeEnum.SHIRT] &&
         moveableElements.value[ProductTypeEnum.SHIRT].length > 0
@@ -399,12 +400,20 @@ export default defineComponent({
           }
         );
       }
-      await createProduct({
+      const createdProduct = await createProduct({
         design,
-        userPrice: parseInt(price),
+        userPrice: price ? parseInt(price) : 0,
         colourId: colourId._id,
         config,
       });
+      if (isBuy.value) {
+        await buyProduct({
+          userId: createdProduct.userId,
+          productId: createdProduct._id,
+          sizeId,
+          quantity,
+        });
+      }
       handleDialogStep(false);
       console.log("Finished");
     };

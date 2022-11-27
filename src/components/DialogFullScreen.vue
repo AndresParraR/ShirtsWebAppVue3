@@ -93,6 +93,7 @@ import Register from "./Register.vue";
 import Login from "./Login.vue";
 import SellOrBuyPrice from "./SellOrBuyPrice.vue";
 import PersonalData from "./PersonalData.vue";
+import html2canvas from "html2canvas";
 
 export default {
   // eslint-disable-next-line vue/no-unused-components
@@ -127,6 +128,7 @@ export default {
   },
   data() {
     return {
+      tempImg: null,
       isLoginUp: false,
       carousel: 0,
       priceStepIsBuy: false,
@@ -154,6 +156,17 @@ export default {
     dialog() {
       console.log("this.dialog", this.pastSteps);
       this.validateSteps();
+      if (this.dialog) {
+        const container = document.getElementById("moveable-container");
+        html2canvas(container).then(async (canvas) => {
+          const imageData = canvas.toDataURL("image/jpg");
+          const newData = imageData.replace(
+            /^data:image\/jpg/,
+            "data:application/octet-stream"
+          );
+          this.tempImg = newData;
+        });
+      }
     },
     pastSteps() {
       this.validateSteps();
@@ -207,9 +220,9 @@ export default {
       console.log(this.steps);
       this.updateCarousel(this.carousel + 1);
     },
-    emitUserPrice(price) {
-      console.log("emitUserPrice", price);
-      this.$emit("setUserPrice", price);
+    emitData(data) {
+      console.log("emitData", data);
+      this.$emit("setData", data);
     },
     currentProps(currentComponent, indexComponent) {
       switch (currentComponent) {
@@ -229,7 +242,8 @@ export default {
           };
         case "SellOrBuyPrice":
           return {
-            setUserPrice: this.emitUserPrice,
+            setData: this.emitData,
+            tempImg: this.tempImg,
             isBuy: this.priceStepIsBuy,
           };
 

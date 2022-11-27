@@ -11,11 +11,7 @@
       grid-template-rows: 1fr;
     "
   >
-    <v-img
-      class="align-end text-white car-img"
-      src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
-      cover
-    >
+    <v-img class="align-end text-white car-img" :src="shirtData.design" contain>
     </v-img>
 
     <div>

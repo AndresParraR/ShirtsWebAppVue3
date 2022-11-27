@@ -10,11 +10,12 @@
       "
     >
       <div style="display: grid; justify-items: center">
+        <!-- <img :src="" /> -->
         <v-img
-          :aspect-ratio="1 / 1"
+          :aspect-ratio="1"
           :width="300"
-          src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
-          cover
+          :src="tempImg"
+          contain
         ></v-img>
       </div>
       <div style="display: grid; align-items: center">
@@ -44,11 +45,20 @@
                 color="primary"
                 v-for="size in sizes"
                 :key="size"
-                :value="size"
+                :value="size._id"
               >
-                {{ size }}
+                {{ size.name }}
               </v-chip>
             </v-chip-group>
+            <v-text-field
+              v-model="quantity"
+              :rules="quantityRules"
+              :max="6"
+              label="Quantity"
+              type="number"
+              variant="outlined"
+              required
+            ></v-text-field>
             <v-text-field
               v-model="address"
               :counter="10"
@@ -77,23 +87,28 @@
 </template>
 
 <script>
+import { ref, onMounted, watch } from "vue";
+import { useActions, useState } from "@/utils/helpesVuex";
+
 export default {
   props: {
     isBuy: {
       type: Boolean,
       required: true,
     },
-    setUserPrice: {
+    setData: {
       type: Function,
       required: false,
+    },
+    tempImg: {
+      type: String,
+      required: true,
     },
   },
   data: () => ({
     valid: true,
-    selection: "M",
     basePrice: 22000,
     userPrice: 0,
-    sizes: ["XS", "S", "M", "L", "XL"],
     priceRules: [
       (v) => !!v || "Price is required",
       (v) => (v && v.length <= 10) || "Price must be less than 10 characters",
@@ -104,6 +119,28 @@ export default {
       (v) => (v && v.length <= 10) || "Address must be less than 10 characters",
     ],
   }),
+  setup() {
+    const { fetchAllSizes } = useActions(["fetchAllSizes"]);
+    const { sizes } = useState(["sizes"]);
+
+    onMounted(() => {
+      fetchAllSizes();
+    });
+
+    watch(sizes, (value) => {
+      if (value.length > 0) selection.value = value[0]._id;
+    });
+
+    const quantity = ref(1);
+    const selection = ref("");
+    const quantityRules = ref([
+      (v) => !!v || "El campo es requerido",
+      (v) => /^[0-9]{1,6}$/.test(v) || "No debe tener mas de 6 digitos",
+      (v) => v > 0 || "No debe ser menos de 1",
+    ]);
+
+    return { quantity, quantityRules, sizes, selection };
+  },
 
   methods: {
     sendRegister() {
@@ -111,7 +148,11 @@ export default {
     },
     validate() {
       this.$refs.form.validate();
-      this.setUserPrice(this.userPrice);
+      this.setData({
+        price: this.userPrice,
+        sizeId: this.selection,
+        quantity: parseInt(this.quantity),
+      });
     },
   },
 };

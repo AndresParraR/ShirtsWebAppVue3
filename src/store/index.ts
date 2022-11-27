@@ -461,8 +461,9 @@ export default createStore({
         if (response.errors) commit("setShowToastError", response.errors);
         else {
           commit("setCreatedProduct", response.data.createProduct);
-          commit("setShowSuccessInfo", "Thanks for create a Product!");
+          commit("setShowSuccessInfo", "Congratulations for create a Product!");
         }
+        return response.data.createProduct;
         // else {
         //   commit("setRegisterOrLogin", response.data.login);
         // }
