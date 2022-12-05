@@ -123,7 +123,7 @@ export default createStore({
       }
       state.toast = {
         show: true,
-        message: payload[0].message,
+        message: typeof payload === "string" ? payload : payload[0].message,
         status: "error",
       };
     },
@@ -153,9 +153,6 @@ export default createStore({
 
       const newMoveableElement = {
         id: state.moveableElements[payload.key].length + 1,
-        // tag: payload.isImage ? "img" : "p",
-        // text: payload.txt,
-        // src: payload.src,
         class: `target${payload.key}-${
           state.moveableElements[payload.key].length + 1
         }`,
@@ -165,11 +162,9 @@ export default createStore({
           ? `<img class="moveable-img" src="${payload.src}" cover />`
           : `<p>${payload.txt}</p>`,
         isImage: payload.isImage,
+        txt: !payload.isImage ? payload.txt : "",
+        image: payload.image ?? "",
       };
-      // state.moveableElements[payload.key] = [
-      //   newMoveableElement,
-      //   ...state.moveableElements[payload.key],
-      // ];
       state.moveableElements[payload.key].push(newMoveableElement);
     },
     editStyleMoveableElement(state, payload) {
@@ -185,6 +180,32 @@ export default createStore({
       if (!alreadyHasId) state.storeId.push(payload);
       localStorage.setItem("itemStore", JSON.stringify(state.storeId));
     },
+    setShirtConfig(state, payload) {
+      payload.key = 0;
+      if (!state.moveableElements[payload.key])
+        state.moveableElements[payload.key] = [];
+      let key = state.moveableElements[payload.key].length;
+      const moveableElements = payload.map((el: any) => {
+        const newMoveableElement = {
+          id: key + 1,
+          class: `target${payload.key}-${
+            key + 1
+          }`,
+          style: el.cssProps,
+          height: el.type == "image" ? 70 : 24,
+          html:
+            el.type == "image"
+              ? `<img class="moveable-img" src="${el.name}" cover />`
+              : `<p>${el.name}</p>`,
+          isImage: el.type == "image",
+          image: el.type == "image" ? el.name : "",
+          txt: el.type == "image" ? "" : el.name,
+        };
+        key += 1
+        return newMoveableElement;
+      });
+      state.moveableElements[payload.key] = [...moveableElements];
+    },
     removeStoreShirt(state, payload) {
       const indexStoreShirt = state.storeId.findIndex(
         (el: any) => el.id == payload
@@ -192,6 +213,9 @@ export default createStore({
       if (indexStoreShirt != -1) {
         state.storeItems.splice(indexStoreShirt, 1);
       }
+    },
+    cleanMoveableElements(state) {
+      state.moveableElements = [];
     },
     handleGenericLoading(state, payload: boolean) {
       state.genericLoading = payload;
@@ -235,6 +259,7 @@ export default createStore({
                 design
                 userPrice
                 finalPrice
+                colourId
                 creationDate
               }
             }
@@ -263,6 +288,7 @@ export default createStore({
                 design
                 userPrice
                 finalPrice
+                colourId
                 creationDate
               }
             }
@@ -289,6 +315,7 @@ export default createStore({
                 title
                 description
                 design
+                colourId
                 userPrice
                 finalPrice
                 creationDate
@@ -300,7 +327,12 @@ export default createStore({
         if (response.errors) commit("setShowToastError", response.errors);
         else commit("setAllShirtsList", response.data.products);
       } catch (error) {
-        const graphQlErrors = (error as any).networkError.result.errors;
+        let graphQlErrors = "";
+        if ((error as any).networkError.result) {
+          graphQlErrors = (error as any).networkError.result.errors;
+        } else {
+          graphQlErrors = "Internal Server Error";
+        }
         commit("setShowToastError", graphQlErrors);
       }
     },
@@ -316,6 +348,7 @@ export default createStore({
                 design
                 title
                 description
+                colourId
                 userPrice
                 finalPrice
                 creationDate
@@ -351,6 +384,30 @@ export default createStore({
         commit("setShowToastError", graphQlErrors);
       }
     },
+    async fetchShirtsConfig({ commit }, id: string) {
+      try {
+        const response = await graphqlClient.query({
+          query: gql`
+            query GetShirtConfig($getShirtConfigId: String!) {
+              getShirtConfig(id: $getShirtConfigId) {
+                cssProps
+                type
+                name
+              }
+            }
+          `,
+          variables: {
+            getShirtConfigId: id,
+          },
+          errorPolicy: "all",
+        });
+        if (response.errors) commit("setShowToastError", response.errors);
+        else commit("setShirtConfig", response.data.getShirtConfig);
+      } catch (error) {
+        const graphQlErrors = (error as any).networkError.result.errors;
+        commit("setShowToastError", graphQlErrors);
+      }
+    },
     async fetchAllMyShops({ commit }) {
       try {
         const response = await graphqlClient.query({
@@ -367,6 +424,7 @@ export default createStore({
                   title
                   description
                   design
+                  colourId
                   userPrice
                   finalPrice
                 }
@@ -385,7 +443,7 @@ export default createStore({
         commit("setShowToastError", graphQlErrors);
       }
     },
-    async buyProduct({ commit }, { userId, productId, sizeId, quantity }) {
+    async buyProduct({ commit }, { userId, productId, sizeId, quantity, address }) {
       try {
         const response = await graphqlClient.mutate({
           mutation: gql`
@@ -401,6 +459,7 @@ export default createStore({
                   title
                   description
                   design
+                  colourId
                   userPrice
                   finalPrice
                 }
@@ -411,7 +470,7 @@ export default createStore({
             }
           `,
           variables: {
-            createSellInput: { userId, productId, sizeId, quantity },
+            createSellInput: { userId, productId, sizeId, quantity, address },
           },
           errorPolicy: "all",
         });
@@ -570,6 +629,9 @@ export default createStore({
     },
     addMoveableElement({ commit }, payload) {
       commit("addMoveableElement", payload);
+    },
+    cleanMoveableElements({ commit }, payload) {
+      commit("cleanMoveableElements", payload);
     },
     editStyleMoveableElement({ commit }, payload) {
       commit("editStyleMoveableElement", payload);

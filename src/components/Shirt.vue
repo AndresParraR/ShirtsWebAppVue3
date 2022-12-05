@@ -4,14 +4,15 @@
     max-width="400"
     style="position: relative; overflow: initial"
   >
-    <v-btn
+    <!-- <v-btn
       v-if="edit"
+      @click.stop="clone"
       icon
       color="primary"
-      style="position: absolute; bottom: -20px; right: -20px; z-index: 1"
+      style="position: absolute; bottom: -20px; right: -20px; z-index: 2"
     >
       <v-icon>fa-solid fa-clone</v-icon>
-    </v-btn>
+    </v-btn> -->
 
     <v-chip
       v-if="shirtData.isNew"
@@ -171,7 +172,11 @@ export default {
       menu.value = false;
     };
 
-    return { menu, toggle, shareButton };
+    const clone = () => {
+      console.log("clone");
+    };
+
+    return { menu, toggle, clone, shareButton };
   },
 };
 </script>

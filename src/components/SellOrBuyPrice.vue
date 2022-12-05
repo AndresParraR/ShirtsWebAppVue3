@@ -1,3 +1,79 @@
+<script lang="ts" setup>
+import {
+  ref,
+  onMounted,
+  watch,
+  defineEmits,
+  defineProps,
+  defineExpose,
+} from "vue";
+import { useActions, useState } from "@/utils/helpesVuex";
+
+const { fetchAllSizes } = useActions(["fetchAllSizes"]);
+const { sizes } = useState(["sizes"]);
+
+const props = defineProps({
+  isBuy: {
+    type: Boolean,
+    required: true,
+  },
+  setData: {
+    type: Function,
+    required: false,
+  },
+  tempImg: {
+    type: String,
+    required: true,
+  },
+});
+
+const emit = defineEmits<{
+  (e: "dataReturned", data: any): void;
+}>();
+
+onMounted(() => {
+  fetchAllSizes();
+});
+
+watch(sizes, (value) => {
+  if (value.length > 0) selection.value = value[0]._id;
+});
+
+const form = ref(null);
+const quantity = ref(1);
+const userPrice = ref(1);
+const selection = ref("");
+const quantityRules = ref([
+  (v: any) => !!v || "El campo es requerido",
+  (v: any) => /^[0-9]{0,6}$/.test(v) || "No debe tener mas de 6 digitos",
+  (v: any) => v > 0 || "No debe ser menos de 1",
+]);
+const valid = ref(true);
+const basePrice = ref(22000);
+const priceRules = ref([
+  (v: any) => !!v || "Price is required",
+  (v: any) => (v && v.length <= 10) || "Price must be less than 10 characters",
+]);
+const address = ref("");
+const addressRules = ref([
+  (v: any) => !!v || "Address is required",
+  (v: any) =>
+    (v && v.length <= 50) || "Address must be less than 50 characters",
+]);
+
+const validate = () => {
+  (form.value as any).validate();
+  emit("dataReturned", {
+    price: userPrice.value,
+    sizeId: selection.value,
+    quantity: quantity.value,
+    address: address.value,
+  });
+};
+
+defineExpose({ submit: validate });
+</script>
+
 <template>
   <div style="width: 900px">
     <h1 class="text-center">{{ isBuy ? "Buy" : "Sell" }} T-Shirt</h1>
@@ -11,12 +87,7 @@
     >
       <div style="display: grid; justify-items: center">
         <!-- <img :src="" /> -->
-        <v-img
-          :aspect-ratio="1"
-          :width="300"
-          :src="tempImg"
-          contain
-        ></v-img>
+        <v-img :aspect-ratio="1" :width="300" :src="tempImg" contain></v-img>
       </div>
       <div style="display: grid; align-items: center">
         <v-form ref="form" v-model="valid" lazy-validation>
@@ -61,7 +132,7 @@
             ></v-text-field>
             <v-text-field
               v-model="address"
-              :counter="10"
+              :counter="50"
               :rules="addressRules"
               label="Address"
               required
@@ -69,7 +140,9 @@
           </div>
 
           <h2 class="mb-10 mt-7">
-            Total: ${{ parseInt(userPrice) + parseInt(basePrice) }}
+            Total: ${{
+              parseInt(userPrice.toString()) + parseInt(basePrice.toString())
+            }}
           </h2>
 
           <v-btn
@@ -85,75 +158,3 @@
     </div>
   </div>
 </template>
-
-<script>
-import { ref, onMounted, watch } from "vue";
-import { useActions, useState } from "@/utils/helpesVuex";
-
-export default {
-  props: {
-    isBuy: {
-      type: Boolean,
-      required: true,
-    },
-    setData: {
-      type: Function,
-      required: false,
-    },
-    tempImg: {
-      type: String,
-      required: true,
-    },
-  },
-  data: () => ({
-    valid: true,
-    basePrice: 22000,
-    userPrice: 0,
-    priceRules: [
-      (v) => !!v || "Price is required",
-      (v) => (v && v.length <= 10) || "Price must be less than 10 characters",
-    ],
-    address: "",
-    addressRules: [
-      (v) => !!v || "Address is required",
-      (v) => (v && v.length <= 10) || "Address must be less than 10 characters",
-    ],
-  }),
-  setup() {
-    const { fetchAllSizes } = useActions(["fetchAllSizes"]);
-    const { sizes } = useState(["sizes"]);
-
-    onMounted(() => {
-      fetchAllSizes();
-    });
-
-    watch(sizes, (value) => {
-      if (value.length > 0) selection.value = value[0]._id;
-    });
-
-    const quantity = ref(1);
-    const selection = ref("");
-    const quantityRules = ref([
-      (v) => !!v || "El campo es requerido",
-      (v) => /^[0-9]{1,6}$/.test(v) || "No debe tener mas de 6 digitos",
-      (v) => v > 0 || "No debe ser menos de 1",
-    ]);
-
-    return { quantity, quantityRules, sizes, selection };
-  },
-
-  methods: {
-    sendRegister() {
-      this.linkRegister && this.linkRegister(false);
-    },
-    validate() {
-      this.$refs.form.validate();
-      this.setData({
-        price: this.userPrice,
-        sizeId: this.selection,
-        quantity: parseInt(this.quantity),
-      });
-    },
-  },
-};
-</script>

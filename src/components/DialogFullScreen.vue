@@ -24,14 +24,14 @@
         <div style="height: 100%">
           <v-carousel
             ref="carousel"
-            :model-value="carousel"
+            :model-value="currentStep"
             height="100%"
-            @update:modelValue="updateCarousel($event)"
+            @update:modelValue="$emit('updateStep', $event)"
             hide-delimiters
             progress="primary"
           >
             <template v-slot:prev="{ props }">
-              <div v-if="carousel == 0"></div>
+              <div v-if="currentStep == 0"></div>
               <v-btn
                 v-else
                 @click="props.onClick"
@@ -42,7 +42,7 @@
             </template>
             <template v-slot:next="{ props }">
               <v-btn
-                v-if="carousel == steps.length - 1"
+                v-if="currentStep == steps.length - 1"
                 @click="$emit('handleDialog', false)"
                 :icon="'fa-regular fa-share-from-square'"
                 :class="props.class"
@@ -56,7 +56,7 @@
                 :aria-label="props.ariaLabel"
               ></v-btn>
             </template>
-            <v-carousel-item v-for="(step, i) in steps" :key="i">
+            <!-- <v-carousel-item v-for="(step, i) in steps" :key="i">
               <v-sheet height="100%">
                 <div class="d-flex fill-height justify-center align-center">
                   <component
@@ -65,7 +65,8 @@
                   />
                 </div>
               </v-sheet>
-            </v-carousel-item>
+            </v-carousel-item> -->
+            <slot></slot>
           </v-carousel>
         </div>
         <!-- <v-bottom-navigation v-model="value">
@@ -97,14 +98,14 @@ import html2canvas from "html2canvas";
 
 export default {
   // eslint-disable-next-line vue/no-unused-components
-  components: {
-    firstStepBrand,
-    secondStepBrand,
-    Register,
-    Login,
-    SellOrBuyPrice,
-    PersonalData,
-  },
+  // components: {
+  //   firstStepBrand,
+  //   secondStepBrand,
+  //   Register,
+  //   Login,
+  //   SellOrBuyPrice,
+  //   PersonalData,
+  // },
   props: {
     dialog: {
       type: Boolean,
@@ -114,18 +115,22 @@ export default {
       type: Array,
       required: true,
     },
+    currentStep: {
+      type: [Number, null],
+      required: true,
+    },
     isBuy: {
       type: Boolean,
       required: false,
       default: false,
     },
   },
-  mounted() {
-    console.log(this.pastSteps);
-    this.steps = this.pastSteps.map((el) => {
-      return { ...el, completed: false };
-    });
-  },
+  // mounted() {
+  //   console.log(this.pastSteps);
+  //   this.steps = this.pastSteps.map((el) => {
+  //     return { ...el, completed: false };
+  //   });
+  // },
   data() {
     return {
       tempImg: null,
@@ -153,21 +158,21 @@ export default {
     };
   },
   watch: {
-    dialog() {
-      console.log("this.dialog", this.pastSteps);
-      this.validateSteps();
-      if (this.dialog) {
-        const container = document.getElementById("moveable-container");
-        html2canvas(container).then(async (canvas) => {
-          const imageData = canvas.toDataURL("image/jpg");
-          const newData = imageData.replace(
-            /^data:image\/jpg/,
-            "data:application/octet-stream"
-          );
-          this.tempImg = newData;
-        });
-      }
-    },
+    // dialog() {
+    //   console.log("dialogFull", this.pastSteps);
+    //   if (!this.dialog) this.validateSteps();
+    //   // if (this.dialog) {
+    //   //   const container = document.getElementById("moveable-container");
+    //   //   html2canvas(container).then(async (canvas) => {
+    //   //     const imageData = canvas.toDataURL("image/jpg");
+    //   //     const newData = imageData.replace(
+    //   //       /^data:image\/jpg/,
+    //   //       "data:application/octet-stream"
+    //   //     );
+    //   //     this.tempImg = newData;
+    //   //   });
+    //   // }
+    // },
     pastSteps() {
       this.validateSteps();
     },
@@ -175,11 +180,12 @@ export default {
   computed: {},
   methods: {
     validateSteps() {
-      this.steps = this.pastSteps.map((el) => {
-        return { ...el, completed: false };
-      });
-      this.carousel = 0;
-      this.priceStepIsBuy = this.isBuy;
+      this.steps = this.pastSteps;
+      // this.steps = this.pastSteps.map((el) => {
+      //   return { ...el, completed: false };
+      // });
+      // this.carousel = 0;
+      // this.priceStepIsBuy = this.isBuy;
     },
     updateCarousel(value) {
       console.log(this.carousel, value, this.steps.length);
@@ -199,8 +205,6 @@ export default {
       ) {
         this.carousel = value;
       }
-
-      // this.carousel = value;
     },
     close() {
       console.log("handleDialog");

@@ -1,3 +1,14 @@
+<script lang="ts" setup>
+import { defineProps } from "vue";
+
+const props = defineProps({
+  msg: {
+    type: String,
+    required: false,
+  },
+});
+</script>
+
 <template>
   <div style="padding: 0 8rem">
     <h1 class="text-center mb-16">Step 1</h1>
@@ -66,11 +77,3 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  name: "firstStepBrand",
-  props: {
-    msg: String,
-  },
-};
-</script>

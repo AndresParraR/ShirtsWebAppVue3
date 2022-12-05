@@ -20,13 +20,20 @@ const storage = getStorage();
 
 // Create a storage reference from our storage service
 const storageDesign = ref(storage, "design");
+const storageEditor = ref(storage, "editor");
 
-const uploadFile = async (file: Blob) => {
+const uploadFileDesign = async (file: Blob) => {
   const storageRef = ref(storageDesign, uuidv4());
   const res = await uploadBytes(storageRef, file);
-  console.log(res);
   const url = await getDownloadURL(storageRef);
   return url;
 };
 
-export { db, storageDesign, uploadFile };
+const uploadFileEditor = async (file: Blob) => {
+  const storageRef = ref(storageEditor, uuidv4());
+  const res = await uploadBytes(storageRef, file);
+  const url = await getDownloadURL(storageRef);
+  return url;
+};
+
+export { db, storageDesign, uploadFileDesign, uploadFileEditor };

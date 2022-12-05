@@ -175,34 +175,34 @@ export default {
     },
   },
   methods: {
-    getImage() {
-      const container = document.getElementById("moveable-container");
-      html2canvas(container).then(async (canvas) => {
-        console.log(canvas);
-        let imageBlob = await new Promise((resolve) =>
-          canvas.toBlob(resolve, "image/png")
-        );
-        console.log("imageBlob: ", imageBlob);
-        uploadFile(imageBlob);
-        var imageData = canvas.toDataURL("image/jpg");
-        var newData = imageData.replace(
-          /^data:image\/jpg/,
-          "data:application/octet-stream"
-        );
-        const download = document.createElement("a");
-        console.log(
-          "imageData: ",
-          imageData,
-          "newData: ",
-          newData,
-          "download: ",
-          download
-        );
-        download.setAttribute("download", "image.jpg");
-        download.setAttribute("href", newData);
-        download.click();
-      });
-    },
+    // getImage() {
+    //   const container = document.getElementById("moveable-container");
+    //   html2canvas(container).then(async (canvas) => {
+    //     console.log(canvas);
+    //     let imageBlob = await new Promise((resolve) =>
+    //       canvas.toBlob(resolve, "image/png")
+    //     );
+    //     console.log("imageBlob: ", imageBlob);
+    //     uploadFile(imageBlob);
+    //     var imageData = canvas.toDataURL("image/jpg");
+    //     var newData = imageData.replace(
+    //       /^data:image\/jpg/,
+    //       "data:application/octet-stream"
+    //     );
+    //     const download = document.createElement("a");
+    //     console.log(
+    //       "imageData: ",
+    //       imageData,
+    //       "newData: ",
+    //       newData,
+    //       "download: ",
+    //       download
+    //     );
+    //     download.setAttribute("download", "image.jpg");
+    //     download.setAttribute("href", newData);
+    //     download.click();
+    //   });
+    // },
     removeTargetActive() {
       const target = document.getElementsByClassName("targetActive")[0];
       if (target) target.classList.toggle("targetActive");

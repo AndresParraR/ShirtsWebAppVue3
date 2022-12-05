@@ -1,3 +1,57 @@
+<script lang="ts" setup>
+import { useState, useActions } from "@/utils/helpesVuex";
+import { watch, defineProps, defineEmits, defineExpose, ref } from "vue";
+
+const { login } = useActions(["login"]);
+const { user } = useState(["user"]);
+
+const props = defineProps({
+  linkRegister: {
+    type: Function,
+    required: false,
+  },
+  finishedFunc: {
+    type: Function,
+    required: false,
+  },
+});
+
+const emit = defineEmits<{
+  (e: "switchComponent", data: boolean): void;
+  (e: "done"): void;
+}>();
+
+watch(user, (value) => {
+  console.log(value, props);
+  if (value) emit("done");
+});
+
+const form = ref(null);
+const valid = ref(true);
+const password = ref("");
+const passwordRules = ref([
+  (v: any) => !!v || "Password is required",
+  // (v) =>
+  //   (v && v.length <= 10) || "Password must be less than 10 characters",
+]);
+const email = ref("");
+const emailRules = ref([
+  (v: any) => !!v || "E-mail is required",
+  (v: any) => /.+@.+\..+/.test(v) || "E-mail must be valid",
+]);
+
+const sendRegister = () => {
+  emit("switchComponent", true);
+};
+
+const validate = () => {
+  login({ email: email.value, password: password.value });
+  (form.value as any).validate();
+};
+
+defineExpose({ submit: validate });
+</script>
+
 <template>
   <div style="width: 900px">
     <h1 class="mb-16 text-center">Login</h1>
@@ -30,55 +84,3 @@
     </v-form>
   </div>
 </template>
-
-<script>
-import { useState, useActions } from "@/utils/helpesVuex";
-import { watch } from "vue";
-
-export default {
-  props: {
-    linkRegister: {
-      type: Function,
-      required: false,
-    },
-    finishedFunc: {
-      type: Function,
-      required: false,
-    },
-  },
-  data: () => ({
-    valid: true,
-    password: "",
-    passwordRules: [
-      (v) => !!v || "Password is required",
-      // (v) =>
-      //   (v && v.length <= 10) || "Password must be less than 10 characters",
-    ],
-    email: "",
-    emailRules: [
-      (v) => !!v || "E-mail is required",
-      (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
-    ],
-  }),
-  setup(props) {
-    const { login } = useActions(["login"]);
-    const { user } = useState(["user"]);
-
-    watch(user, (value) => {
-      console.log(value, props);
-      if (value) props.finishedFunc();
-    });
-    return { login };
-  },
-
-  methods: {
-    sendRegister() {
-      this.linkRegister && this.linkRegister(false);
-    },
-    validate() {
-      this.login({ email: this.email, password: this.password });
-      this.$refs.form.validate();
-    },
-  },
-};
-</script>

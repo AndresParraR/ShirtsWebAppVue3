@@ -14,8 +14,9 @@
       </div>
       <div class="container-shirts">
         <Shirt
-          :edit="true"
           v-for="(shirt, i) in myShirts"
+          :edit="true"
+          @click="gotToEdit(shirt)"
           :shirtData="shirt"
           :key="i"
         />
@@ -35,6 +36,7 @@
 <script lang="ts">
 import { useActions, useState } from "@/utils/helpesVuex";
 import { defineComponent, onMounted, ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 // Components
 import Shirt from "../components/Shirt.vue";
@@ -55,15 +57,23 @@ export default defineComponent({
       "genericLoading",
     ]);
 
+    const router = useRouter();
+    const route = useRoute();
+
     onMounted(async () => {
       handleGenericLoading(true);
       await fetchMyShirtsList();
       handleGenericLoading(false);
     });
 
+    const gotToEdit = (shirt: any) => {
+      console.log("gotToEdit", shirt);
+      router.push({ name: "editor", params: { id: shirt._id, colour: shirt.colourId, edit: "true" } });
+    };
+
     const page = ref(1);
 
-    return { page, myShirts, genericLoading };
+    return { page, gotToEdit, myShirts, genericLoading };
   },
 });
 </script>

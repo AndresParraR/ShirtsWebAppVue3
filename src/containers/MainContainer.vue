@@ -30,10 +30,36 @@
       >I'm an error alert.</v-alert> -->
 
     <DialogFullScreen
+      ref="stepper"
+      @handleDialog="handleDialogStep($event)"
+      @updateStep="updateStep($event)"
+      :current-step="currentStep"
+      :dialog="dialogSteps"
+      :pastSteps="steps"
+    >
+      <v-carousel-item>
+        <v-sheet height="100%">
+          <div class="d-flex fill-height justify-center align-center">
+            <Register
+              v-if="isRegister"
+              @switchComponent="setIsRegister"
+              @done="currentStepCompleted(StepsEnum.LOGINREGISTER)"
+            />
+            <Login
+              v-else
+              @switchComponent="setIsRegister"
+              @done="currentStepCompleted(StepsEnum.LOGINREGISTER)"
+            />
+          </div>
+        </v-sheet>
+      </v-carousel-item>
+    </DialogFullScreen>
+
+    <!-- <DialogFullScreen
       @handleDialog="handleDialogStep($event)"
       :dialog="dialogSteps"
       :pastSteps="steps"
-    />
+    /> -->
 
     <v-overlay
       :model-value="genericLoading"
@@ -49,7 +75,7 @@
     <v-snackbar
       v-model="toast.show"
       min-height="50"
-      :timeout="4000"
+      :timeout="2000"
       position="fixed"
       location="top right"
       :multi-line="false"
@@ -102,19 +128,23 @@
 </template>
 
 <script lang="ts">
-import Navbar from "../components/Navbar.vue";
+import Navbar from "@/components/Navbar.vue";
+import Login from "@/components/Login.vue";
+import Register from "@/components/Register.vue";
 import { useActions, useState } from "@/utils/helpesVuex";
 import { ref } from "vue";
 import { StepProp } from "@/types";
 import DialogFullScreen from "../components/DialogFullScreen.vue";
 import { storageDesign } from "@/firebase";
 import { listAll } from "firebase/storage";
+import { StepsEnum } from "@/types";
 
 export default {
   components: {
     Navbar,
     DialogFullScreen,
-    // Footer,
+    Login,
+    Register,
   },
   mounted() {
     console.log(storageDesign);
@@ -142,19 +172,73 @@ export default {
     };
   },
   setup() {
-    const { toast, genericLoading, dialogSteps } = useState([
+    const { toast, genericLoading, dialogSteps, user } = useState([
       "toast",
       "genericLoading",
       "dialogSteps",
+      "user",
     ]);
+
     const { handleDialogStep } = useActions(["handleDialogStep"]);
 
-    const steps = ref<StepProp[]>([
-      {
-        component: "Login",
-        tutorial: false,
-      },
+    const isRegister = ref(true);
+    const currentStep: any = ref(null);
+
+    const steps: any = ref([
+      { step: StepsEnum.LOGINREGISTER, tutorial: false, completed: false },
     ]);
+
+    const updateStep = (value: any) => {
+      if (value >= steps.value.length) handleDialogStep(false);
+
+      // if (
+      //   value < currentStep.value &&
+      //   !steps.value[currentStep.value - 1].tutorial
+      // )
+      //   return;
+
+      // if (
+      //   !steps.value[currentStep.value].completed &&
+      //   !steps.value[currentStep.value].tutorial &&
+      //   value > currentStep.value
+      // )
+      //   return;
+
+      // currentStep.value = value;
+
+      validateDialogSteps();
+    };
+
+    const currentStepCompleted = (event: any) => {
+      const index = steps.value.findIndex((el: any) => el.step == event);
+      steps.value[index].completed = true;
+      console.log(steps.value);
+      updateStep(index + 1);
+    };
+
+    const validateDialogSteps = () => {
+      if (user.value) {
+        steps.value = steps.value.map((el: any) => {
+          switch (el.step) {
+            case StepsEnum.LOGINREGISTER:
+              el.completed = true;
+          }
+          return el;
+        });
+      } else {
+        steps.value = steps.value.map((el: any) => {
+          el.completed = false;
+          return el;
+        });
+      }
+      currentStep.value = steps.value.findIndex(
+        (el: any) => el.completed == false
+      );
+    };
+
+    const setIsRegister = (val: boolean) => {
+      isRegister.value = val;
+    };
 
     // const handleDialogStep = (val: boolean) => {
     //   console.log("handleDialogStep", val);
@@ -162,7 +246,19 @@ export default {
     // };
 
     // eslint-disable-next-line vue/no-dupe-keys
-    return { steps, dialogSteps, toast, genericLoading, handleDialogStep };
+    return {
+      steps,
+      dialogSteps,
+      updateStep,
+      setIsRegister,
+      currentStep,
+      currentStepCompleted,
+      toast,
+      isRegister,
+      genericLoading,
+      handleDialogStep,
+      StepsEnum,
+    };
   },
   computed: {},
   methods: {

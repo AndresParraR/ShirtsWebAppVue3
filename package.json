@@ -1,7 +1,6 @@
 {
   "name": "shirts-web",
   "version": "0.1.0",
-
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -22,6 +21,7 @@
     "apollo-client": "^2.6.10",
     "apollo-link-context": "^1.0.20",
     "apollo-link-http": "^1.5.17",
+    "blob-util": "^2.0.2",
     "core-js": "^3.8.3",
     "firebase": "^9.14.0",
     "gh-pages": "^4.0.0",

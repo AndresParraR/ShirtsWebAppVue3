@@ -1,3 +1,60 @@
+<script lang="ts" setup>
+import { useState, useActions } from "@/utils/helpesVuex";
+import { watch, defineProps, defineEmits, defineExpose, ref } from "vue";
+
+const { register } = useActions(["register"]);
+const { user } = useState(["user"]);
+
+const props = defineProps({
+  linkRegister: {
+    type: Function,
+    required: false,
+  },
+  finishedFunc: {
+    type: Function,
+    required: false,
+  },
+});
+
+const emit = defineEmits<{
+  (e: "switchComponent", data: boolean): void;
+  (e: "done"): void;
+}>();
+
+watch(user, (value) => {
+  console.log(value, props);
+  if (value) emit("done");
+});
+
+const form = ref(null);
+const valid = ref(true);
+const password = ref("");
+const confirmPassword = ref("");
+const passwordRules = ref([
+  (v: any) => !!v || "Password is required",
+  (v: any) =>
+    (v && v.length <= 10) || "Password must be less than 10 characters",
+]);
+const checkbox = ref(false);
+const email = ref("");
+const confirmEmail = ref("");
+const emailRules = ref([
+  (v: any) => !!v || "E-mail is required",
+  (v: any) => /.+@.+\..+/.test(v) || "E-mail must be valid",
+]);
+
+const sendLogin = () => {
+  emit("switchComponent", false);
+};
+
+const validate = () => {
+  register({ email: email.value, password: password.value });
+  (form.value as any).validate();
+};
+
+defineExpose({ submit: validate });
+</script>
+
 <template>
   <div style="width: 900px">
     <h1 class="mb-16 text-center">Register</h1>
@@ -52,65 +109,3 @@
     </v-form>
   </div>
 </template>
-
-<script>
-import { useActions, useState } from "@/utils/helpesVuex";
-import { watch } from "vue";
-
-export default {
-  props: {
-    linkLogin: {
-      type: Function,
-      required: false,
-    },
-    finishedFunc: {
-      type: Function,
-      required: false,
-    },
-  },
-  data: () => ({
-    valid: true,
-    password: "",
-    confirmPassword: "",
-    passwordRules: [
-      (v) => !!v || "Password is required",
-      (v) =>
-        (v && v.length <= 10) || "Password must be less than 10 characters",
-    ],
-    email: "",
-    confirmEmail: "",
-    emailRules: [
-      (v) => !!v || "E-mail is required",
-      (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
-    ],
-    checkbox: false,
-  }),
-  setup(props) {
-    const { register } = useActions(["register"]);
-    const { user } = useState(["user"]);
-
-    watch(user, (value) => {
-      console.log(value, props);
-      if (value) props.finishedFunc();
-    });
-
-    return { register, user };
-  },
-
-  methods: {
-    sendLogin() {
-      this.linkLogin && this.linkLogin(true);
-    },
-    validate() {
-      this.register({ email: this.email, password: this.password });
-      this.$refs.form.validate();
-    },
-    reset() {
-      this.$refs.form.reset();
-    },
-    resetValidation() {
-      this.$refs.form.resetValidation();
-    },
-  },
-};
-</script>
